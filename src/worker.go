@@ -5,16 +5,19 @@ import (
 	"net"
 	"net/rpc"
 	"os"
+	"sync"
 	"time"
 )
 
 
 type WorkerRPC struct {
+	sync.Mutex
 	addr string
 	jobCallback func(job []byte) error
 	masterAddr string
 	listener net.Listener
 	shutdown chan bool
+	nJob int
 }
 
 func NewWorker(addr string, masterAddr string, jobCallback func(job []byte) error) *WorkerRPC {
@@ -65,6 +68,10 @@ func (m *WorkerRPC) Register() {
 
 func (m *WorkerRPC) DoJob(job []byte, _ *struct{}) error {
 	err := m.jobCallback(job)
+	m.Lock()
+	m.nJob++
+	log.Println("Job done:", m.nJob)
+	m.Unlock()
 	return err
 }
 

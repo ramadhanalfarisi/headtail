@@ -4,238 +4,28 @@ import (
 	"encoding/json"
 	"flag"
 	"log"
+	"strconv"
 
 	"github.com/ramadhanalfarisi/headtail/src"
 )
+
+func createJobDummy() []map[string]interface{}{
+	num := 1000
+	jobs := []map[string]interface{}{}
+	for i := 0; i < num; i++ {
+		jobs = append(jobs, map[string]interface{}{
+			"id": i,
+			"name": "Job " + strconv.Itoa(i),
+			"data": "Data " + strconv.Itoa(i),
+		})
+	}
+	return jobs
+}
 
 func main() {
 	role := flag.String("role", "master", "worker or master")	
 	addr := flag.String("addr", "/tmp/master.sock", "address")
 	masterAddr := flag.String("maddr", "/tmp/master.sock", "address")
-
-	jobs := []map[string]interface{}{
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-		{
-			"head": "1",
-			"tail": "1",
-			"result": "1",
-		},
-		{
-			"head": "1",
-			"tail": "2",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "1",
-			"result": "3",
-		},
-		{
-			"head": "2",
-			"tail": "2",
-			"result": "4",
-		},
-	}
-
 
 	flag.Parse()
 
@@ -248,8 +38,9 @@ func main() {
 			return nil
 		})
 		worker.Listen()
-	} else if *role == "main" {
-		for _, job := range jobs {
+	} else if *role == "test" {
+		jobs := createJobDummy()
+		for _, job := range  jobs{
 			jsonJob, err := json.Marshal(job)
 			if err != nil {
 				log.Println("Failed to marshal job:", err)
@@ -258,6 +49,7 @@ func main() {
 			if err != nil {
 				log.Println("Failed to register job:", err)
 			}
+			log.Println("Job registered:", job)
 		}
 	} else {
 		panic("Invalid role")

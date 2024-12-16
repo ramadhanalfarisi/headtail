@@ -107,22 +107,12 @@ func (m *MasterRPC) doJob(availableWorker chan string, availableJob chan []byte)
 
 		if len(m.workers) == 0 {
 			log.Println("No available worker")
-		} else if len(m.jobs) == 0 {
-			log.Println("No available job")
 		}
 	}()
 
 	for {
-		m.mu.Lock() // Lock access to shared data
-		if len(m.workers) == 0 || len(m.jobs) == 0 {
-			m.mu.Unlock() // Unlock before continuing the loop
-			continue
-		}
-
 		worker := <-availableWorker
 		job := <-availableJob
-
-		m.mu.Unlock() // Unlock after accessing shared resources
 
 		// Handle job in a separate goroutine
 		go func(worker string, job []byte) {
@@ -158,7 +148,11 @@ func (m *MasterRPC) scheduleWorker(availableWorker chan string) {
 			}
 
 			log.Println("Worker", m.workers[i], "available")
-			go func(i int) { availableWorker <- m.workers[i] }(i)
+			go func(i int) {
+				m.mu.Lock()
+				availableWorker <- m.workers[i]
+				m.mu.Unlock()
+			}(i)
 			i++
 
 			m.mu.Unlock()
@@ -174,7 +168,11 @@ func (m *MasterRPC) scheduleJob(availableJob chan []byte) {
 			for len(m.jobs) <= i {
 				m.condJob.Wait()
 			}
-			go func(i int) { availableJob <- m.jobs[i] }(i)
+			go func(i int) {
+				m.muJob.Lock()
+				availableJob <- m.jobs[i]
+				m.muJob.Unlock()
+			}(i)
 			i++
 
 			m.muJob.Unlock()
